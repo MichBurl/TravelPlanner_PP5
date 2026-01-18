@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Planner Pro</title>
+    
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+        
+        <aside class="sidebar">
+            <header>
+                <h2>🗺️ Planer</h2>
+                <p>Ustal trasę przejazdu</p>
+            </header>
+
+            <form id="add-city-form" class="search-box">
+                <input type="text" id="city-input" placeholder="Wpisz miasto..." required>
+                <button type="submit">+</button>
+            </form>
+
+            <div class="timeline-container">
+                <ul id="stops-list" class="timeline-list">
+                    </ul>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <div id="map" class="map-section"></div>
+
+            <div class="stats-panel">
+                
+                <div class="controls-container">
+                    <h3>⛽ Kalkulator Paliwa</h3>
+                    <div class="input-group">
+                        <label>Spalanie (L/100km)</label>
+                        <input type="number" id="fuel-consumption" value="8" min="1" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Cena paliwa (PLN/L)</label>
+                        <input type="number" id="fuel-price" value="6.50" min="1" step="0.01">
+                    </div>
+                    <button id="show-gas-stations" class="action-btn">
+                        ⛽ Pokaż stacje na trasie
+                    </button>
+                </div>
+
+                <div class="results-container">
+                    <div class="stat-box">
+                        <span class="label">Dystans</span>
+                        <strong id="stat-dist">0 km</strong>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Czas jazdy</span>
+                        <strong id="stat-time">0 h</strong>
+                    </div>
+                    <div class="stat-box cost-box">
+                        <span class="label">Koszt podróży</span>
+                        <strong id="stat-cost">0 PLN</strong>
+                    </div>
+                </div>
+
+                <div class="chart-wrapper">
+                    <canvas id="weatherChart"></canvas>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script type="module" src="./js/app.js"></script>
+</body>
+</html>

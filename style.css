@@ -1,0 +1,133 @@
+:root {
+    --bg-app: #f0f2f5;
+    --bg-panel: #ffffff;
+    --primary: #3b82f6; /* Niebieski */
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --danger: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
+
+body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: var(--text-dark); }
+
+/* GŁÓWNY LAYOUT: SIATKA */
+.app-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr; /* Lewo stałe, Prawo reszta */
+    height: 100%;
+}
+
+/* --- LEWY PANEL --- */
+.sidebar {
+    background: var(--bg-panel);
+    border-right: 1px solid #e5e7eb;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.03);
+}
+
+.sidebar header h2 { font-size: 1.5rem; margin-bottom: 5px; }
+.sidebar header p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 20px; }
+
+.search-box { display: flex; gap: 8px; margin-bottom: 20px; }
+.search-box input {
+    flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; outline: none;
+}
+.search-box input:focus { border-color: var(--primary); }
+.search-box button {
+    background: var(--primary); color: white; border: none; width: 40px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;
+}
+
+.timeline-container { flex: 1; overflow-y: auto; padding-right: 5px; }
+
+/* Styl Listy Przystanków */
+.timeline-list { list-style: none; position: relative; padding-left: 15px; border-left: 2px solid #e5e7eb; margin-left: 10px; }
+.stop-item {
+    background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 15px; position: relative; cursor: grab; transition: all 0.2s;
+}
+.stop-item:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); transform: translateY(-1px); }
+.stop-item::before { /* Kropka na osi */
+    content: ''; position: absolute; left: -22px; top: 18px; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px var(--primary);
+}
+.delete-btn { float: right; color: var(--text-light); border: none; background: none; cursor: pointer; font-size: 1.1rem; }
+.delete-btn:hover { color: var(--danger); }
+
+/* --- PRAWY PANEL --- */
+.main-content {
+    display: grid;
+    grid-template-rows: 60% 40%; /* Proporcje: Mapa 60%, Statystyki 40% */
+}
+
+/* Mapa */
+.map-section { width: 100%; height: 100%; }
+
+/* Panel Dolny */
+.stats-panel {
+    background: var(--bg-panel);
+    border-top: 1px solid #e5e7eb;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 250px 1fr 1fr; /* 3 kolumny: Inputy | Liczby | Wykres */
+    gap: 30px;
+    overflow-y: auto;
+}
+
+/* 1. Kontrolki Paliwa */
+.controls-container h3 { font-size: 1rem; margin-bottom: 15px; color: var(--text-dark); }
+.input-group { margin-bottom: 12px; }
+.input-group label { display: block; font-size: 0.8rem; color: var(--text-light); margin-bottom: 4px; }
+.input-group input {
+    width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary);
+}
+
+/* 2. Wyniki */
+.results-container {
+    display: flex; flex-direction: column; justify-content: center; gap: 15px;
+}
+.stat-box { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6; padding-bottom: 8px; }
+.stat-box.cost-box { border: none; background: #eff6ff; padding: 15px; border-radius: 8px; color: var(--primary); }
+.stat-box .label { font-size: 0.9rem; color: var(--text-light); }
+.stat-box strong { font-size: 1.2rem; }
+
+/* 3. Wykres */
+.chart-wrapper {
+    position: relative;
+    height: 100%;
+    min-height: 150px;
+}
+
+/* Przycisk akcji w panelu */
+.action-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: var(--text-dark); /* Ciemny, elegancki */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.action-btn:hover {
+    background-color: black;
+}
+
+.action-btn.active {
+    background-color: var(--primary); /* Niebieski jak aktywne */
+}
+
+/* Wygląd Popupa na mapie */
+.mapboxgl-popup-content {
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.mapboxgl-popup-close-button {
+    font-size: 1.2rem;
+    color: #666;
+}
