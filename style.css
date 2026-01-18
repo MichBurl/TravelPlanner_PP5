@@ -1,187 +1,260 @@
-:root {
-    --bg-app: #f0f2f5;
-    --bg-panel: #ffffff;
-    --primary: #3b82f6;
-    --text-dark: #1f2937;
-    --text-light: #6b7280;
-    --danger: #ef4444;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* =========================================
+   1. GLOBAL RESET & LAYOUT FIXES
+   ========================================= */
+
+html, body {
+    height: 100vh;        /* 100% wysokości widoku */
+    width: 100vw;         /* 100% szerokości */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;     /* Blokada przewijania całej strony */
+    background-color: #212529; /* Ciemne tło pod spodem */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
+/* Wymuszenie pełnej wysokości dla kontenera Bootstrap */
+body > .d-flex {
+    height: 100vh !important;
+    width: 100%;
+}
 
-body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: var(--text-dark); }
+/* =========================================
+   2. SIDEBAR (LEWY PANEL)
+   ========================================= */
 
-.app-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
+aside {
+    height: 100vh;
+    overflow-y: auto;
+    background-color: #2b3035 !important; /* Bootstrap Dark Grey */
+    border-right: 1px solid #373b3e;
+}
+
+/* --- WYSZUKIWARKA (Seamless Look) --- */
+#add-city-form {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    transition: box-shadow 0.2s;
+}
+
+#add-city-form:focus-within {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+/* Ikonka Lupy (Lewa strona) */
+#add-city-form .input-group-text {
+    background-color: #111315;     
+    border: 1px solid #373b3e;
+    border-right: none;            
+    color: #6c757d;
+    height: 42px;                  /* Sztywna wysokość */
+}
+
+/* Pole Input (Środek) */
+#add-city-form input {
+    background-color: #111315 !important;
+    border: 1px solid #373b3e !important;
+    border-left: none !important;  
+    border-right: none !important; 
+    color: #e9ecef !important;
+    height: 42px;                  
+    box-shadow: none !important;   
+}
+
+#add-city-form input::placeholder {
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+/* Przycisk Plus (Prawa strona) */
+#add-city-form button {
+    height: 42px;                  
+    width: 42px;
+    border-radius: 0 8px 8px 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    border: 1px solid #0d6efd;     
+}
+
+/* --- LISTA PRZYSTANKÓW (Timeline) --- */
+#stops-list {
+    padding-left: 20px;
+    margin-top: 15px;
+}
+
+#stops-list .stop-item {
+    background: #212529; /* Ciemne tło */
+    border: 1px solid #373b3e;
+    border-radius: 8px;
+    padding: 16px;       
+    margin-bottom: 12px;
+    position: relative;  /* Ważne dla przycisku usuwania */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Hover na kartę */
+#stops-list .stop-item:hover {
+    border-color: #0d6efd;
+    transform: translateX(4px);
+    background: #2b3035; 
+}
+
+/* Kropka na osi czasu */
+#stops-list .stop-item::before {
+    content: '';
+    position: absolute;
+    left: -29px; 
+    top: 24px;   
+    width: 12px;
+    height: 12px;
+    background: #0d6efd;
+    border: 2px solid #212529; 
+    border-radius: 50%;
+    z-index: 2;
+}
+
+/* Teksty wewnątrz karty */
+.stop-item h4 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f8f9fa;
+    padding-right: 20px; 
+}
+
+.stop-item p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #adb5bd;
+}
+
+/* PRZYCISK USUWANIA (X) */
+.delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: #495057; 
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+}
+
+.delete-btn:hover {
+    color: #ef4444;       
+    background: rgba(239, 68, 68, 0.1); 
+}
+
+
+/* =========================================
+   3. MAIN CONTENT (MAPA + STATYSTYKI)
+   ========================================= */
+
+main {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Kontener mapy rośnie i zajmuje wszystko co wolne */
+.flex-grow-1.position-relative {
+    flex: 1 1 auto; 
+    min-height: 0;  
+    position: relative;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
     height: 100%;
 }
 
-/* --- SIDEBAR --- */
-.sidebar {
-    background: var(--bg-panel);
-    border-right: 1px solid #e5e7eb;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    z-index: 10;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.03);
-}
-
-/* Header z przyciskami */
-.sidebar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
-
-.sidebar-header h2 { font-size: 1.5rem; margin-bottom: 5px; }
-.sidebar-header p { color: var(--text-light); font-size: 0.9rem; }
-
-/* Wspólny styl dla przycisków w nagłówku (?, 🗑️) */
-.icon-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px; /* Lekko kwadratowe */
-    border: 1px solid #e5e7eb;
-    background: white;
-    color: var(--text-dark);
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-}
-
-.icon-btn:hover {
-    border-color: var(--primary);
-    background-color: #eff6ff;
-    color: var(--primary);
-    transform: translateY(-1px);
-}
-
-/* Specyficzny kolor dla kosza po najechaniu */
-#reset-btn:hover {
-    border-color: var(--danger);
-    color: var(--danger);
-    background-color: #fef2f2;
-}
-
-.search-box { display: flex; gap: 8px; margin-bottom: 20px; }
-.search-box input {
-    flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; outline: none;
-}
-.search-box input:focus { border-color: var(--primary); }
-.search-box button {
-    background: var(--primary); color: white; border: none; width: 40px; border-radius: 8px; cursor: pointer; font-size: 1.2rem;
-}
-
-.timeline-container { flex: 1; overflow-y: auto; padding-right: 5px; }
-.timeline-list { list-style: none; position: relative; padding-left: 15px; border-left: 2px solid #e5e7eb; margin-left: 10px; }
-.stop-item {
-    background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 15px; position: relative; cursor: grab; transition: all 0.2s;
-}
-.stop-item:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); transform: translateY(-1px); }
-.stop-item::before { content: ''; position: absolute; left: -22px; top: 18px; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px var(--primary); }
-.delete-btn { float: right; color: var(--text-light); border: none; background: none; cursor: pointer; font-size: 1.1rem; }
-.delete-btn:hover { color: var(--danger); }
-
-/* --- MAIN --- */
-.main-content {
-    display: grid;
-    grid-template-rows: 60% 40%;
-}
-.map-section { width: 100%; height: 100%; }
+/* =========================================
+   4. PANEL DOLNY (STATYSTYKI)
+   ========================================= */
 
 .stats-panel {
-    background: var(--bg-panel);
-    border-top: 1px solid #e5e7eb;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: 250px 1fr 1fr;
-    gap: 30px;
-    overflow-y: auto;
-}
-
-.controls-container h3 { font-size: 1rem; margin-bottom: 15px; color: var(--text-dark); }
-.input-group { margin-bottom: 12px; }
-.input-group label { display: block; font-size: 0.8rem; color: var(--text-light); margin-bottom: 4px; }
-.input-group input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary); }
-
-.action-btn { width: 100%; margin-top: 10px; padding: 10px; background-color: var(--text-dark); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
-.action-btn:hover { background-color: black; }
-.action-btn.active { background-color: var(--primary); }
-
-.results-container { display: flex; flex-direction: column; justify-content: center; gap: 15px; }
-.stat-box { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6; padding-bottom: 8px; }
-.stat-box.cost-box { border: none; background: #eff6ff; padding: 15px; border-radius: 8px; color: var(--primary); }
-.stat-box .label { font-size: 0.9rem; color: var(--text-light); }
-.stat-box strong { font-size: 1.2rem; }
-
-.chart-wrapper { position: relative; height: 100%; min-height: 150px; }
-.mapboxgl-popup-content { border-radius: 8px; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-
-/* --- MODAL STYLES --- */
-.modal-overlay {
-    display: none; /* Domyślnie ukryty */
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Półprzezroczyste tło */
-    backdrop-filter: blur(3px);
+    height: 320px;       /* Stała wysokość */
+    flex-shrink: 0;      
+    background-color: #212529; 
+    border-top: 1px solid #373b3e;
     z-index: 1000;
-    justify-content: center;
-    align-items: center;
+    overflow-y: auto;    
 }
 
-.modal-overlay.open { display: flex; }
+/* Inputy formularza (Bootstrap Override) */
+.form-control, .form-select {
+    background-color: #111315 !important;
+    border-color: #373b3e !important;
+    color: #e9ecef !important;
+}
+.form-control:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+label { color: #adb5bd; }
 
-.modal-content {
-    background: white;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s ease;
+/* Boks kosztów (Niebieski Gradient) */
+.card.bg-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
 }
 
-@keyframes slideIn {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+/* =========================================
+   5. DROBNE ELEMENTY UI
+   ========================================= */
+
+/* Niestandardowy Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #212529; }
+::-webkit-scrollbar-thumb { background: #495057; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #6c757d; }
+
+/* Typografia */
+.fs-7 { font-size: 0.75rem; }
+.ls-1 { letter-spacing: 1px; }
+
+/* Popupy Mapboxa (Dark Mode) */
+.mapboxgl-popup-content {
+    background: #212529 !important;
+    color: #e9ecef !important;
+    border: 1px solid #495057;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    font-family: 'Inter', sans-serif;
+}
+.mapboxgl-popup-tip {
+    border-top-color: #212529 !important;
+    border-bottom-color: #212529 !important;
 }
 
-.modal-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;
+/* Toast (Powiadomienie) */
+#toast {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
-.close-modal-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
-.close-modal-btn:hover { color: black; }
-
-.modal-body ul { list-style: none; padding: 0; }
-.modal-body li { margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--primary); font-size: 0.95rem; line-height: 1.5; }
-.modal-footer { margin-top: 20px; text-align: center; color: #999; font-size: 0.8rem; border-top: 1px solid #eee; padding-top: 10px;}
-
-
-/* Powiadomienie "Toast" */
-.toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px); /* Domyślnie schowany pod ekranem */
-    background-color: #333;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    font-size: 0.9rem;
-    opacity: 0;
-    transition: all 0.3s ease-in-out;
-    z-index: 2000;
+#toast.show {
+    opacity: 1 !important;
+    transform: translateX(-50%) translateY(-10px) !important;
 }
 
-.toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
+/* Przyciski ikon w sidebarze */
+.btn-outline-secondary, .btn-outline-danger, .btn-outline-info {
+    border-color: #495057;
+    color: #adb5bd;
 }
+.btn-outline-secondary:hover { background: #495057; color: white; }
+.btn-outline-danger:hover { background: #dc3545; color: white; }
+.btn-outline-info:hover { background: #0dcaf0; color: black; }

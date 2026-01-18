@@ -1,9 +1,20 @@
 // js/chartManager.js
 
 let weatherChartInstance = null;
-const ctx = document.getElementById('weatherChart').getContext('2d');
 
 export function initChart() {
+    // NAPRAWA: Pobieramy kontekst TUTAJ, wewnątrz funkcji, a nie na zewnątrz
+    const canvas = document.getElementById('weatherChart');
+    if (!canvas) {
+        console.error("Błąd: Nie znaleziono elementu <canvas id='weatherChart'> w HTML.");
+        return;
+    }
+    const ctx = canvas.getContext('2d');
+
+    // Kolory pasujące do Bootstrap Dark Mode
+    const gridColor = '#373b3e'; 
+    const textColor = '#adb5bd'; 
+
     weatherChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -13,21 +24,22 @@ export function initChart() {
                     label: 'Temperatura (°C)',
                     data: [],
                     type: 'line',
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderColor: '#ffc107', // Żółty (Warning)
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
                     yAxisID: 'y',
                     tension: 0.4,
                     pointRadius: 4,
-                    borderWidth: 3,
+                    borderWidth: 2,
                     order: 1
                 },
                 {
                     label: 'Szansa na deszcz (%)',
                     data: [],
                     type: 'bar',
-                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    backgroundColor: 'rgba(13, 110, 253, 0.5)', // Niebieski (Primary)
                     yAxisID: 'y1',
-                    barPercentage: 0.5,
+                    barPercentage: 0.6,
+                    borderRadius: 4,
                     order: 2
                 }
             ]
@@ -37,8 +49,18 @@ export function initChart() {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, position: 'top' },
+                legend: { 
+                    display: true, 
+                    position: 'top',
+                    labels: { color: textColor, font: { family: 'Inter' } }
+                },
                 tooltip: {
+                    backgroundColor: '#212529',
+                    titleColor: '#fff',
+                    bodyColor: '#adb5bd',
+                    borderColor: '#495057',
+                    borderWidth: 1,
+                    padding: 10,
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
@@ -50,9 +72,25 @@ export function initChart() {
                 }
             },
             scales: {
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Temp (°C)' }, grid: { color: '#f3f4f6' } },
-                y1: { type: 'linear', display: true, position: 'right', min: 0, max: 100, title: { display: true, text: 'Deszcz (%)' }, grid: { drawOnChartArea: false } },
-                x: { grid: { display: false } }
+                y: { 
+                    type: 'linear', 
+                    display: true, 
+                    position: 'left', 
+                    grid: { color: gridColor },
+                    ticks: { color: textColor }
+                },
+                y1: { 
+                    type: 'linear', 
+                    display: true, 
+                    position: 'right', 
+                    min: 0, max: 100, 
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: textColor, callback: (v) => v + '%' }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { color: textColor }
+                }
             }
         }
     });

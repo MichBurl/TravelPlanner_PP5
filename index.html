@@ -1,103 +1,141 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="pl" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Travel Planner Pro</title>
+    <title>Travel Planner Pro | Dashboard</title>
     
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="overflow-hidden">
 
-    <div class="app-layout">
+    <div class="d-flex h-100 w-100">
         
-        <aside class="sidebar">
-    <header class="sidebar-header">
-        <div>
-            <h2>🗺️ Planer</h2>
-            <p>Ustal trasę przejazdu</p>
-        </div>
-        <div style="display: flex; gap: 5px;">
-            <button id="share-btn" class="icon-btn" title="Udostępnij trasę (Kopiuj link)">🔗</button>
-            <button id="reset-btn" class="icon-btn" title="Wyczyść trasę">🗑️</button>
-            <button id="help-btn" class="icon-btn" title="Instrukcja">?</button>
-        </div>
-    </header>
+        <aside class="d-flex flex-column p-3 border-end bg-body-tertiary" style="width: 350px; min-width: 350px; z-index: 1000;">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-map-fill me-2"></i>TravelPro</h5>
+                    <small class="text-secondary">Route Planner</small>
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button id="share-btn" class="btn btn-outline-secondary" title="Udostępnij"><i class="bi bi-share"></i></button>
+                    <button id="reset-btn" class="btn btn-outline-danger" title="Reset"><i class="bi bi-trash"></i></button>
+                    <button id="help-btn" class="btn btn-outline-info" title="Pomoc"><i class="bi bi-question-circle"></i></button>
+                </div>
+            </div>
 
-    <div id="toast" class="toast">Link skopiowany do schowka! 📋</div>
-
-            <form id="add-city-form" class="search-box">
-                <input type="text" id="city-input" placeholder="Wpisz miasto..." required>
-                <button type="submit">+</button>
+            <form id="add-city-form" class="input-group mb-3 shadow-sm">
+                <span class="input-group-text bg-body border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" id="city-input" class="form-control border-start-0 ps-0" placeholder=" Dodaj miasto..." required>
+                <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i></button>
             </form>
 
-            <div class="timeline-container">
-                <ul id="stops-list" class="timeline-list"></ul>
+            <div class="flex-grow-1 overflow-auto pe-2 custom-scrollbar">
+                <h6 class="text-uppercase text-secondary fs-7 mb-3 ls-1">Plan podróży</h6>
+                <ul id="stops-list" class="list-unstyled position-relative border-start border-secondary ms-2 ps-3 pb-5">
+                    </ul>
+            </div>
+
+            <div class="mt-3 pt-3 border-top text-center text-muted fs-7">
+                Powered by Mapbox & Chart.js
             </div>
         </aside>
 
-        <main class="main-content">
-            <div id="map" class="map-section"></div>
-
-            <div class="stats-panel">
-                <div class="controls-container">
-                    <h3>⛽ Kalkulator Paliwa</h3>
-                    <div class="input-group">
-                        <label>Spalanie (L/100km)</label>
-                        <input type="number" id="fuel-consumption" value="8" min="1" step="0.1">
-                    </div>
-                    <div class="input-group">
-                        <label>Cena paliwa (PLN/L)</label>
-                        <input type="number" id="fuel-price" value="6.50" min="1" step="0.01">
-                    </div>
-                    <button id="show-gas-stations" class="action-btn">
-                        ⛽ Pokaż stacje na trasie
-                    </button>
-                    <button id="toggle-traffic" class="action-btn">
-                        🚦 Pokaż natężenie ruchu
-                    </button>
+        <main class="d-flex flex-column flex-grow-1 position-relative">
+            
+            <div class="flex-grow-1 position-relative">
+                <div id="map" class="w-100 h-100"></div>
+                
+                <div id="toast" class="position-absolute bottom-0 start-50 translate-middle-x mb-4 px-4 py-2 bg-success text-white rounded-pill shadow opacity-0 transition-opacity" style="z-index: 2000; pointer-events: none;">
+                    <i class="bi bi-check-circle me-2"></i> <span id="toast-msg">Akcja wykonana!</span>
                 </div>
+            </div>
 
-                <div class="results-container">
-                    <div class="stat-box">
-                        <span class="label">Dystans</span>
-                        <strong id="stat-dist">0 km</strong>
-                    </div>
-                    <div class="stat-box">
-                        <span class="label">Czas jazdy</span>
-                        <strong id="stat-time">0 h</strong>
-                    </div>
-                    <div class="stat-box cost-box">
-                        <span class="label">Koszt podróży</span>
-                        <strong id="stat-cost">0 PLN</strong>
-                    </div>
-                </div>
+            <div class="stats-panel bg-body border-top shadow-lg p-3" style="height: 320px; z-index: 1000;">
+                <div class="container-fluid h-100 d-flex flex-column">
+                    
+                    <div class="row g-3 h-100">
+                        <div class="col-md-3 d-flex flex-column gap-2">
+                            <h6 class="text-uppercase text-secondary fs-7 ls-1"><i class="bi bi-sliders me-1"></i> Ustawienia</h6>
+                            
+                            <div class="form-floating">
+                                <input type="number" class="form-control form-control-sm" id="fuel-consumption" value="8" min="1" step="0.1">
+                                <label for="fuel-consumption">Spalanie (L/100km)</label>
+                            </div>
+                            
+                            <div class="form-floating">
+                                <input type="number" class="form-control form-control-sm" id="fuel-price" value="6.50" min="1" step="0.01">
+                                <label for="fuel-price">Cena paliwa (PLN/L)</label>
+                            </div>
 
-                <div class="chart-wrapper">
-                    <canvas id="weatherChart"></canvas>
+                            <div class="d-grid gap-2 mt-auto">
+                                <button id="show-gas-stations" class="btn btn-outline-warning btn-sm text-start">
+                                    <i class="bi bi-fuel-pump me-2"></i> Stacje paliw
+                                </button>
+                                <button id="toggle-traffic" class="btn btn-outline-danger btn-sm text-start">
+                                    <i class="bi bi-stoplights me-2"></i> Natężenie ruchu
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 d-flex flex-column justify-content-center gap-3 border-start border-end border-secondary-subtle px-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Dystans</span>
+                                <span class="h4 mb-0 fw-bold" id="stat-dist">0 km</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-secondary">Czas</span>
+                                <span class="h4 mb-0 fw-bold" id="stat-time">0 h</span>
+                            </div>
+                            
+                            <div class="card bg-primary text-white border-0 shadow-sm mt-2">
+                                <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="opacity-75 d-block">Koszt całkowity</small>
+                                        <h3 class="mb-0 fw-bold" id="stat-cost">0 PLN</h3>
+                                    </div>
+                                    <i class="bi bi-wallet2 fs-1 opacity-50"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 position-relative">
+                            <h6 class="text-uppercase text-secondary fs-7 ls-1 position-absolute top-0 start-0"><i class="bi bi-cloud-sun me-1"></i> Prognoza na trasie</h6>
+                            <div class="w-100 h-100 pt-4">
+                                <canvas id="weatherChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
+
     </div>
 
-    <div id="help-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>💡 Jak korzystać z aplikacji?</h3>
-                <button id="close-modal" class="close-modal-btn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <ul>
-                    <li><strong>🖱️ Prawy Klik na Mapie:</strong> Dodaje nowy punkt trasy w miejscu kliknięcia.</li>
-                    <li><strong>📍 Wpisz Miasto:</strong> Użyj wyszukiwarki po lewej stronie.</li>
-                    <li><strong>✋ Przeciągnij i Upuść:</strong> Zmień kolejność miast na liście.</li>
-                    <li><strong>❌ Usuwanie:</strong> Kliknij "X" na liście.</li>
-                    <li><strong>⛽ Stacje Paliw:</strong> Szuka stacji wzdłuż wyznaczonej trasy.</li>
-                    <li><strong>🚦 Korki:</strong> Włącza warstwę natężenia ruchu na żywo.</li> <li><strong>🌦️ Wykres:</strong> Temperatura i deszcz na trasie.</li>
-                </ul>
-                <div class="modal-footer">
-                    <small>Wersja 1.1 - Traffic & Save (Coming soon)</small>
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-lightbulb text-warning me-2"></i>Instrukcja</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item bg-transparent"><i class="bi bi-mouse me-2 text-primary"></i> <strong>Prawy Klik:</strong> Dodaj punkt na mapie.</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-search me-2 text-primary"></i> <strong>Wyszukiwarka:</strong> Wpisz nazwę miasta.</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-arrows-move me-2 text-primary"></i> <strong>Drag & Drop:</strong> Zmieniaj kolejność na liście.</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-fuel-pump me-2 text-warning"></i> <strong>Stacje:</strong> Szukaj stacji wzdłuż trasy.</li>
+                        <li class="list-group-item bg-transparent"><i class="bi bi-share me-2 text-success"></i> <strong>Share:</strong> Udostępnij link do trasy.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Rozumiem</button>
                 </div>
             </div>
         </div>
@@ -106,6 +144,17 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script type="module" src="./js/app.js"></script>
+    
+    <script>
+        // Mały skrypt pomocniczy do otwierania modala przez Bootstrap API
+        // Uruchamiany po załadowaniu DOM, podpina twój przycisk #help-btn do modala Bootstrapa
+        document.addEventListener('DOMContentLoaded', () => {
+            const myModal = new bootstrap.Modal(document.getElementById('helpModal'));
+            document.getElementById('help-btn').addEventListener('click', () => myModal.show());
+        });
+    </script>
 </body>
 </html>
