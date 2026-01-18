@@ -28,7 +28,7 @@ body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: 
     box-shadow: 2px 0 10px rgba(0,0,0,0.03);
 }
 
-/* Header z przyciskiem pomocy */
+/* Header z przyciskami */
 .sidebar-header {
     display: flex;
     justify-content: space-between;
@@ -39,25 +39,35 @@ body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: 
 .sidebar-header h2 { font-size: 1.5rem; margin-bottom: 5px; }
 .sidebar-header p { color: var(--text-light); font-size: 0.9rem; }
 
-/* Przycisk Pomocy (?) */
-.help-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 2px solid var(--text-light);
-    background: transparent;
-    color: var(--text-light);
+/* Wspólny styl dla przycisków w nagłówku (?, 🗑️) */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px; /* Lekko kwadratowe */
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: var(--text-dark);
     font-weight: bold;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 1rem;
 }
-.help-btn:hover {
+
+.icon-btn:hover {
     border-color: var(--primary);
-    color: var(--primary);
     background-color: #eff6ff;
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
+/* Specyficzny kolor dla kosza po najechaniu */
+#reset-btn:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background-color: #fef2f2;
 }
 
 .search-box { display: flex; gap: 8px; margin-bottom: 20px; }
