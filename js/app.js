@@ -1,4 +1,3 @@
-// js/app.js
 import { map, toggleTrafficLayer, addMapMarker, flyToLocation } from './map.js';
 import { getCityCoordinates, getCityNameFromCoords, findGasStationsAlongRoute } from './api.js';
 import { initChart } from './chartManager.js';
@@ -14,14 +13,35 @@ const gasBtn = document.getElementById('show-gas-stations');
 const trafficBtn = document.getElementById('toggle-traffic');
 const shareBtn = document.getElementById('share-btn');
 const resetBtn = document.getElementById('reset-btn');
-const helpBtn = document.getElementById('help-btn');
 const toast = document.getElementById('toast');
+
+// --- MODALE ---
+
+// 1. Modal Potwierdzenia (Dodawanie miasta)
+const confirmModalEl = document.getElementById('confirmModal');
+const confirmModalName = document.getElementById('confirm-city-name');
+const confirmAddBtn = document.getElementById('confirm-add-btn');
+
+// 2. Modal Resetowania (NOWY)
+const resetModalEl = document.getElementById('resetModal');
+const confirmResetBtn = document.getElementById('confirm-reset-btn');
+
+// Zmienne instancji i stanu
+let pendingCityData = null;
+let confirmModalInstance = null; 
+let resetModalInstance = null; // Instancja dla resetu
 
 // --- START ---
 initChart();
 initFuelListeners(() => calculateAndDisplayStats(state.lastRouteData));
 
-// Inicjalizacja danych (URL ma pierwszeństwo przed LocalStorage)
+// Inicjalizacja Modali Bootstrapa po załadowaniu
+document.addEventListener('DOMContentLoaded', () => {
+    confirmModalInstance = new bootstrap.Modal(confirmModalEl);
+    resetModalInstance = new bootstrap.Modal(resetModalEl); // Inicjalizacja resetu
+});
+
+// Inicjalizacja danych (URL / LocalStorage)
 window.addEventListener('load', async () => {
     const hasUrl = loadFromUrl();
     if (hasUrl) {
@@ -37,7 +57,7 @@ window.addEventListener('load', async () => {
     }
 });
 
-// --- OBSŁUGA ZDARZEŃ (EVENTS) ---
+// --- OBSŁUGA ZDARZEŃ ---
 
 // 1. Dodawanie miasta (Formularz)
 form.addEventListener('submit', async (e) => {
@@ -56,13 +76,29 @@ form.addEventListener('submit', async (e) => {
 // 2. Prawy Klik na Mapie
 map.on('contextmenu', async (e) => {
     const { lng, lat } = e.lngLat;
-    const popup = new mapboxgl.Popup().setLngLat([lng, lat]).setHTML('Szukam...').addTo(map);
+    const popup = new mapboxgl.Popup({ closeButton: false })
+        .setLngLat([lng, lat])
+        .setHTML('<div style="color:#333; font-size:12px">🔍 Szukam...</div>')
+        .addTo(map);
+
     try {
         const data = await getCityNameFromCoords(lng, lat);
-        popup.remove();
-        if (confirm(`Dodać przystanek: ${data.name}?`)) await handleAddCity(data);
+        popup.remove(); 
+        pendingCityData = data;
+        confirmModalName.innerText = data.name;
+        confirmModalInstance.show();
     } catch (err) {
-        popup.setHTML('<span style="color:red">Brak miasta</span>');
+        popup.setHTML('<span style="color:red">Tu nie ma miasta!</span>');
+        setTimeout(() => popup.remove(), 2000);
+    }
+});
+
+// Potwierdzenie dodania miasta (w Modalu)
+confirmAddBtn.addEventListener('click', async () => {
+    if (pendingCityData) {
+        confirmModalInstance.hide();
+        await handleAddCity(pendingCityData);
+        pendingCityData = null;
     }
 });
 
@@ -70,7 +106,6 @@ map.on('contextmenu', async (e) => {
 gasBtn.addEventListener('click', async () => {
     if (!state.lastRouteData) return alert("Najpierw wyznacz trasę!");
     
-    // Toggle OFF
     if (state.gasMarkers.length > 0) {
         state.gasMarkers.forEach(m => m.remove());
         state.gasMarkers = [];
@@ -78,7 +113,6 @@ gasBtn.addEventListener('click', async () => {
         gasBtn.innerText = "⛽ Pokaż stacje na trasie";
         return;
     }
-    // Toggle ON
     const originalText = gasBtn.innerText;
     gasBtn.innerText = "Szukam...";
     gasBtn.disabled = true;
@@ -112,14 +146,27 @@ shareBtn.addEventListener('click', () => {
         .catch(() => prompt("Skopiuj link:", link));
 });
 
-// 6. Reset
+// 6. Resetowanie (POPRAWIONE)
+// Krok A: Kliknięcie ikony kosza otwiera modal
 resetBtn.addEventListener('click', () => {
-    if (confirm("Usunąć całą trasę?")) resetApp();
+    resetModalInstance.show();
 });
+
+// Krok B: Kliknięcie "Usuń wszystko" w modalu wykonuje akcję
+confirmResetBtn.addEventListener('click', () => {
+    resetApp();                 // Czyścimy aplikację
+    resetModalInstance.hide();  // Zamykamy modal
+    showToast("Trasa została usunięta 🗑️"); // Potwierdzenie
+});
+
 
 // --- UTILS ---
 function showToast(msg) {
-    toast.innerText = msg;
+    document.getElementById('toast-msg').innerText = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    toast.classList.remove('opacity-0');
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('opacity-0');
+    }, 3000);
 }
