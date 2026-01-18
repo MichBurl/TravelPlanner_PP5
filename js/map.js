@@ -1,84 +1,118 @@
 import { config } from './config.js';
 
-// Przypisanie tokenu do obiektu globalnego mapboxgl
 mapboxgl.accessToken = config.mapboxToken;
 
-// Tworzenie instancji mapy
 export const map = new mapboxgl.Map({
-    container: 'map', // ID elementu HTML, w którym ma być mapa
-    style: 'mapbox://styles/mapbox/streets-v11', // Styl mapy (możesz zmienić na 'dark-v10' lub 'satellite-v9')
-    center: [19.145, 51.919], // Współrzędne startowe [lng, lat] (Środek Polski)
-    zoom: 6, // Poziom przybliżenia (6 pokazuje cały kraj)
-    projection: 'globe' // Efekt kuli ziemskiej przy oddalaniu (bajer!)
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [19.145, 51.919],
+    zoom: 6,
+    projection: 'globe'
 });
 
-// Dodanie kontrolek nawigacji (plus/minus do zoomu)
 map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+map.on('style.load', () => map.setFog({}));
 
-// Opcjonalnie: Dodanie efektu atmosfery przy oddaleniu
-map.on('style.load', () => {
-    map.setFog({}); 
-});
+// --- POMOCNIK: ZNAJDOWANIE MIEJSCA DLA WARSTWY ---
+// Szuka ID warstwy z napisami, aby wstawić naszą trasę/korki POD napisy, ale NAD drogi.
+function getLayerInsertionPoint() {
+    const layers = map.getStyle().layers;
+    // Szukamy warstwy etykiet drogowych lub pierwszej warstwy symboli
+    for (const layer of layers) {
+        if (layer.type === 'symbol' && layer.id.includes('road')) {
+            return layer.id;
+        }
+    }
+    // Fallback: jakakolwiek warstwa symboli
+    const symbolLayer = layers.find(layer => layer.type === 'symbol');
+    return symbolLayer ? symbolLayer.id : undefined;
+}
 
-/**
- * Dodaje marker na mapie w podanych współrzędnych.
- * Zwraca instancję markera, abyśmy mogli go później usunąć.
- */
+// --- Marker ---
 export function addMapMarker(coords) {
-    const marker = new mapboxgl.Marker({ color: '#007bff' }) // Niebieski kolor
+    return new mapboxgl.Marker({ color: '#3b82f6' })
         .setLngLat(coords)
         .addTo(map);
-    
-    return marker;
 }
 
-/**
- * Przesuwa mapę do podanego punktu (efekt lotu)
- */
+// --- Fly To ---
 export function flyToLocation(coords) {
-    map.flyTo({
-        center: coords,
-        zoom: 12,
-        speed: 1.5, // Prędkość lotu
-        curve: 1    // Płynność krzywej lotu
-    });
+    map.flyTo({ center: coords, zoom: 12, speed: 1.5, curve: 1 });
 }
 
-/**
- * Rysuje linię trasy na mapie.
- * @param {Object} geoJsonGeometry - Obiekt geometrii zwrócony przez API
- */
+// --- Draw Route ---
 export function drawRoute(geoJsonGeometry) {
-    // Sprawdzamy, czy warstwa trasy już istnieje
+    // 1. Jeśli warstwa już istnieje, tylko aktualizujemy dane
     if (map.getSource('route')) {
-        // Jeśli tak, tylko aktualizujemy dane (bardzo szybkie!)
         map.getSource('route').setData({
-            type: 'Feature',
-            properties: {},
-            geometry: geoJsonGeometry
+            type: 'Feature', properties: {}, geometry: geoJsonGeometry
         });
-    } else {
-        // Jeśli nie, dodajemy nową warstwę (tylko raz, przy pierwszej trasie)
+        return;
+    }
+
+    // 2. Jeśli nie istnieje, tworzymy nową
+    const insertBefore = getLayerInsertionPoint();
+
+    map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: {
+            type: 'geojson',
+            data: { type: 'Feature', properties: {}, geometry: geoJsonGeometry }
+        },
+        layout: { 
+            'line-join': 'round', 
+            'line-cap': 'round' 
+        },
+        paint: {
+            'line-color': '#3b82f6',
+            'line-width': 6,
+            'line-opacity': 0.8
+        }
+    }, insertBefore); // Wstawiamy pod napisy!
+}
+
+// --- Traffic Layer ---
+export function toggleTrafficLayer() {
+    // A. Jeśli warstwa nie istnieje - dodaj ją
+    if (!map.getSource('mapbox-traffic')) {
+        map.addSource('mapbox-traffic', {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-traffic-v1'
+        });
+
+        const insertBefore = getLayerInsertionPoint();
+
         map.addLayer({
-            id: 'route',
-            type: 'line',
-            source: {
-                type: 'geojson',
-                data: {
-                    type: 'Feature',
-                    properties: {},
-                    geometry: geoJsonGeometry
-                }
-            },
-            layout: {
-                'line-join': 'round',
-                'line-cap': 'round'
-            },
-            paint: {
-                'line-color': '#3887be', // Kolor trasy
-                'line-width': 5,         // Grubość linii
-                'line-opacity': 0.75     // Przezroczystość
+            'id': 'traffic',
+            'type': 'line',
+            'source': 'mapbox-traffic',
+            'source-layer': 'traffic',
+            'paint': {
+                'line-width': 2.5, // Grubość linii korków
+                'line-color': [
+                    'case',
+                    ['==', 'low', ['get', 'congestion']], '#4caf50',      // Zielony
+                    ['==', 'moderate', ['get', 'congestion']], '#ff9800', // Pomarańczowy
+                    ['==', 'heavy', ['get', 'congestion']], '#f44336',    // Czerwony
+                    ['==', 'severe', ['get', 'congestion']], '#8b0000',   // Bordowy (Zator)
+                    '#000000' 
+                ]
             }
-        });
+        }, insertBefore); // Wstawiamy pod napisy, ale nad drogi
+        
+        return true;
+    } 
+    
+    // B. Jeśli warstwa istnieje - przełącz widoczność
+    else {
+        const visibility = map.getLayoutProperty('traffic', 'visibility');
+        if (visibility === 'none') {
+            map.setLayoutProperty('traffic', 'visibility', 'visible');
+            return true;
+        } else {
+            map.setLayoutProperty('traffic', 'visibility', 'none');
+            return false;
+        }
     }
 }
