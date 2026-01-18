@@ -1,5 +1,3 @@
-// js/state.js
-
 export const state = {
     stops: [],            // Lista przystanków
     lastRouteData: null,  // Dane z API Mapbox (geometria, czas)

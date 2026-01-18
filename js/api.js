@@ -1,24 +1,58 @@
 import { config } from './config.js';
 
+/**
+ * Zamienia nazwę (z inputa) na współrzędne [lng, lat]
+ * Szuka miast, wsi ORAZ adresów (usunięto filtry typów)
+ */
 export async function getCityCoordinates(cityName) {
     try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(cityName)}.json?access_token=${config.mapboxToken}&limit=1&types=place`;
+        // Brak parametru 'types' oznacza, że szukamy wszystkiego (adresów też)
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(cityName)}.json?access_token=${config.mapboxToken}&limit=1&language=pl`;
         
         const response = await fetch(url);
         const data = await response.json();
 
         if (data.features.length === 0) {
-            throw new Error('Nie znaleziono miasta o takiej nazwie.');
+            throw new Error('Nie znaleziono miejsca o takiej nazwie.');
         }
 
         const location = data.features[0];
         return {
-            name: location.text,
+            // text to np. "Marszałkowska", place_name to "Marszałkowska, Warszawa..."
+            name: location.text || location.place_name, 
             coords: location.center
         };
 
     } catch (error) {
         console.error("Błąd Geocoding:", error);
+        throw error;
+    }
+}
+
+/**
+ * REVERSE GEOCODING: Zamienia współrzędne [lng, lat] na nazwę (Dla Prawego Kliku)
+ */
+export async function getCityNameFromCoords(lng, lat) {
+    try {
+        // Tutaj też pozwalamy na adresy (types=address,place,locality)
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${config.mapboxToken}&language=pl`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.features.length === 0) {
+            throw new Error('Nie znaleziono adresu w tym punkcie.');
+        }
+
+        const location = data.features[0];
+        return {
+            // Dla adresu 'text' to ulica, dla miasta 'text' to miasto
+            name: location.text || "Wybrany punkt",
+            coords: location.center
+        };
+
+    } catch (error) {
+        console.error("Błąd Reverse Geocoding:", error);
         throw error;
     }
 }
@@ -42,6 +76,9 @@ export async function getWeatherForecast(lat, lng) {
     }
 }
 
+/**
+ * Pobiera trasę przejazdu
+ */
 export async function getRoute(coordsArray) {
     const coordsString = coordsArray
         .map(coord => coord.join(','))
@@ -64,17 +101,18 @@ export async function getRoute(coordsArray) {
     }
 }
 
+/**
+ * Szuka stacji paliw używając Tilequery API
+ */
 export async function findGasStationsAlongRoute(routeGeometry) {
-    // 1. Sprawdzamy Turf.js
     if (typeof turf === 'undefined') {
-        console.error("Błąd: Brak biblioteki Turf.js w index.html!");
+        console.error("Błąd: Brak biblioteki Turf.js!");
         return [];
     }
 
     const line = turf.lineString(routeGeometry.coordinates);
     const length = turf.length(line, { units: 'kilometers' });
     
-    // 2. Punkty skanowania co 20 km (gęściej dla lepszej dokładności)
     const steps = 20; 
     const searchPoints = [];
     
@@ -84,39 +122,29 @@ export async function findGasStationsAlongRoute(routeGeometry) {
     }
     searchPoints.push(routeGeometry.coordinates[routeGeometry.coordinates.length - 1]);
 
-    // 3. Generujemy zapytania do Tilequery API
     const requests = searchPoints.map(coords => {
         const [lng, lat] = coords;
-        
-        // radius=2000 -> szukamy w promieniu 2000 metrów (2km) od autostrady
-        // limit=10 -> max 10 wyników na punkt
-        // layers=poi_label -> szukamy tylko punktów zainteresowania
-        const url = `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/${lng},${lat}.json?radius=2000&limit=10&layers=poi_label&access_token=${config.mapboxToken}`;
-        
+        const url = `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/${lng},${lat}.json?radius=3000&limit=10&layers=poi_label&access_token=${config.mapboxToken}`;
         return fetch(url).then(res => res.json());
     });
 
     const results = await Promise.all(requests);
-
-    // 4. Filtrowanie wyników
     const stations = [];
-    const seenNames = new Set();
+    const seenNames = new Set(); 
 
     results.forEach(data => {
         if (data.features) {
             data.features.forEach(feature => {
                 const props = feature.properties;
-                
                 if (props.maki === 'fuel' || (props.type && props.type.toLowerCase().includes('gas'))) {
-                    
-                    const name = props.name || props.name_en || "Stacja Paliw";
+                    const name = props.name || "Stacja Paliw";
                     const uniqueKey = `${name}-${feature.geometry.coordinates[0]}`;
 
                     if (!seenNames.has(uniqueKey)) {
                         seenNames.add(uniqueKey);
                         stations.push({
                             name: name,
-                            address: "Przy trasie",
+                            address: "Przy trasie", 
                             coords: feature.geometry.coordinates
                         });
                     }
@@ -129,28 +157,27 @@ export async function findGasStationsAlongRoute(routeGeometry) {
 }
 
 /**
- * REVERSE GEOCODING: Zamienia współrzędne [lng, lat] na nazwę miasta
+ * AUTOCOMPLETE: Pobiera podpowiedzi (Miasta + Ulice)
+ * ZMIANA: Dodano 'address' do parametru types
  */
-export async function getCityNameFromCoords(lng, lat) {
+export async function getCitySuggestions(query) {
+    if (query.length < 3) return [];
+
     try {
-        // types=place -> chcemy tylko nazwy miejscowości, a nie konkretne ulice
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=place&limit=1&access_token=${config.mapboxToken}`;
+        // types=place,locality,address -> Miasta, wsie ORAZ ulice
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=place,locality,address&limit=5&language=pl`;
         
         const response = await fetch(url);
         const data = await response.json();
 
-        if (data.features.length === 0) {
-            throw new Error('Nie znaleziono miejscowości w tym punkcie.');
-        }
-
-        const location = data.features[0];
-        return {
-            name: location.text,
-            coords: location.center
-        };
+        return data.features.map(f => ({
+            name: f.text,           // Np. "Marszałkowska"
+            fullName: f.place_name, // Np. "Marszałkowska, Warszawa, Polska"
+            coords: f.center
+        }));
 
     } catch (error) {
-        console.error("Błąd Reverse Geocoding:", error);
-        throw error;
+        console.error("Autocomplete Error:", error);
+        return [];
     }
 }

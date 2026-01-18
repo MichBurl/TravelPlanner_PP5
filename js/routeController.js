@@ -1,4 +1,3 @@
-// js/routeController.js
 import { state } from './state.js';
 import { getRoute, getWeatherForecast } from './api.js';
 import { addMapMarker, flyToLocation, drawRoute } from './map.js';

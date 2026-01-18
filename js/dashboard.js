@@ -1,5 +1,3 @@
-// js/dashboard.js
-
 // Elementy DOM
 const uiStats = {
     dist: document.getElementById('stat-dist'),

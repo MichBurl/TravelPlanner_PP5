@@ -1,4 +1,3 @@
-// js/storage.js
 import { state } from './state.js';
 import { addMapMarker, flyToLocation } from './map.js';
 

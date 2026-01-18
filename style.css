@@ -1,38 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* =========================================
-   1. GLOBAL RESET & LAYOUT FIXES
-   ========================================= */
-
 html, body {
-    height: 100vh;        /* 100% wysokości widoku */
-    width: 100vw;         /* 100% szerokości */
+    height: 100vh;        
+    width: 100vw;         
     margin: 0;
     padding: 0;
-    overflow: hidden;     /* Blokada przewijania całej strony */
-    background-color: #212529; /* Ciemne tło pod spodem */
+    overflow: hidden;     
+    background-color: #212529; 
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Wymuszenie pełnej wysokości dla kontenera Bootstrap */
 body > .d-flex {
     height: 100vh !important;
     width: 100%;
 }
 
-/* =========================================
-   2. SIDEBAR (LEWY PANEL)
-   ========================================= */
-
 aside {
     height: 100vh;
     overflow-y: auto;
-    background-color: #2b3035 !important; /* Bootstrap Dark Grey */
+    background-color: #2b3035 !important; 
     border-right: 1px solid #373b3e;
 }
 
-/* --- WYSZUKIWARKA (Seamless Look) --- */
 #add-city-form {
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     border-radius: 8px;
@@ -43,16 +33,14 @@ aside {
     box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
 }
 
-/* Ikonka Lupy (Lewa strona) */
 #add-city-form .input-group-text {
     background-color: #111315;     
     border: 1px solid #373b3e;
     border-right: none;            
     color: #6c757d;
-    height: 42px;                  /* Sztywna wysokość */
+    height: 42px;                  
 }
 
-/* Pole Input (Środek) */
 #add-city-form input {
     background-color: #111315 !important;
     border: 1px solid #373b3e !important;
@@ -68,7 +56,6 @@ aside {
     font-size: 0.9rem;
 }
 
-/* Przycisk Plus (Prawa strona) */
 #add-city-form button {
     height: 42px;                  
     width: 42px;
@@ -80,30 +67,27 @@ aside {
     border: 1px solid #0d6efd;     
 }
 
-/* --- LISTA PRZYSTANKÓW (Timeline) --- */
 #stops-list {
     padding-left: 20px;
     margin-top: 15px;
 }
 
 #stops-list .stop-item {
-    background: #212529; /* Ciemne tło */
+    background: #212529; 
     border: 1px solid #373b3e;
     border-radius: 8px;
     padding: 16px;       
     margin-bottom: 12px;
-    position: relative;  /* Ważne dla przycisku usuwania */
+    position: relative;  
     transition: all 0.2s ease-in-out;
 }
 
-/* Hover na kartę */
 #stops-list .stop-item:hover {
     border-color: #0d6efd;
     transform: translateX(4px);
     background: #2b3035; 
 }
 
-/* Kropka na osi czasu */
 #stops-list .stop-item::before {
     content: '';
     position: absolute;
@@ -117,7 +101,6 @@ aside {
     z-index: 2;
 }
 
-/* Teksty wewnątrz karty */
 .stop-item h4 {
     margin: 0 0 4px 0;
     font-size: 1rem;
@@ -132,7 +115,6 @@ aside {
     color: #adb5bd;
 }
 
-/* PRZYCISK USUWANIA (X) */
 .delete-btn {
     position: absolute;
     top: 8px;
@@ -156,18 +138,12 @@ aside {
     background: rgba(239, 68, 68, 0.1); 
 }
 
-
-/* =========================================
-   3. MAIN CONTENT (MAPA + STATYSTYKI)
-   ========================================= */
-
 main {
     height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Kontener mapy rośnie i zajmuje wszystko co wolne */
 .flex-grow-1.position-relative {
     flex: 1 1 auto; 
     min-height: 0;  
@@ -182,12 +158,8 @@ main {
     height: 100%;
 }
 
-/* =========================================
-   4. PANEL DOLNY (STATYSTYKI)
-   ========================================= */
-
 .stats-panel {
-    height: 320px;       /* Stała wysokość */
+    height: 320px;       
     flex-shrink: 0;      
     background-color: #212529; 
     border-top: 1px solid #373b3e;
@@ -195,7 +167,6 @@ main {
     overflow-y: auto;    
 }
 
-/* Inputy formularza (Bootstrap Override) */
 .form-control, .form-select {
     background-color: #111315 !important;
     border-color: #373b3e !important;
@@ -207,26 +178,18 @@ main {
 }
 label { color: #adb5bd; }
 
-/* Boks kosztów (Niebieski Gradient) */
 .card.bg-primary {
     background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
 }
 
-/* =========================================
-   5. DROBNE ELEMENTY UI
-   ========================================= */
-
-/* Niestandardowy Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #212529; }
 ::-webkit-scrollbar-thumb { background: #495057; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #6c757d; }
 
-/* Typografia */
 .fs-7 { font-size: 0.75rem; }
 .ls-1 { letter-spacing: 1px; }
 
-/* Popupy Mapboxa (Dark Mode) */
 .mapboxgl-popup-content {
     background: #212529 !important;
     color: #e9ecef !important;
@@ -241,7 +204,6 @@ label { color: #adb5bd; }
     border-bottom-color: #212529 !important;
 }
 
-/* Toast (Powiadomienie) */
 #toast {
     transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
@@ -250,7 +212,6 @@ label { color: #adb5bd; }
     transform: translateX(-50%) translateY(-10px) !important;
 }
 
-/* Przyciski ikon w sidebarze */
 .btn-outline-secondary, .btn-outline-danger, .btn-outline-info {
     border-color: #495057;
     color: #adb5bd;
@@ -258,3 +219,44 @@ label { color: #adb5bd; }
 .btn-outline-secondary:hover { background: #495057; color: white; }
 .btn-outline-danger:hover { background: #dc3545; color: white; }
 .btn-outline-info:hover { background: #0dcaf0; color: black; }
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid #373b3e;
+    border-bottom: none;
+    border-top: none;
+    z-index: 9999;
+    
+    top: 100%; 
+    left: 0; 
+    right: 0;
+    
+    background-color: #212529; 
+    border-radius: 0 0 8px 8px; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.autocomplete-items div {
+    padding: 12px;
+    cursor: pointer;
+    background-color: #212529;
+    border-bottom: 1px solid #373b3e;
+    color: #e9ecef;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+
+.autocomplete-items div:hover {
+    background-color: #0d6efd; 
+    color: white;
+}
+
+.autocomplete-items div strong {
+    font-weight: 600;
+}
+
+.input-group.has-suggestions {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}

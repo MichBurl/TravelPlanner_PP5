@@ -1,5 +1,3 @@
-// js/chartManager.js
-
 let weatherChartInstance = null;
 
 export function initChart() {
