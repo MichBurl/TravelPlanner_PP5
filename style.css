@@ -162,3 +162,26 @@ body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: 
 .modal-body ul { list-style: none; padding: 0; }
 .modal-body li { margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--primary); font-size: 0.95rem; line-height: 1.5; }
 .modal-footer { margin-top: 20px; text-align: center; color: #999; font-size: 0.8rem; border-top: 1px solid #eee; padding-top: 10px;}
+
+
+/* Powiadomienie "Toast" */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px); /* Domyślnie schowany pod ekranem */
+    background-color: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    z-index: 2000;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}

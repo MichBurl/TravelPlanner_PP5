@@ -13,16 +13,19 @@
     <div class="app-layout">
         
         <aside class="sidebar">
-            <header class="sidebar-header">
-                <div>
-                    <h2>🗺️ Planer</h2>
-                    <p>Ustal trasę przejazdu</p>
-                </div>
-                <div style="display: flex; gap: 5px;">
-                    <button id="reset-btn" class="icon-btn" title="Wyczyść trasę">🗑️</button>
-                    <button id="help-btn" class="icon-btn" title="Instrukcja">?</button>
-                </div>
-            </header>
+    <header class="sidebar-header">
+        <div>
+            <h2>🗺️ Planer</h2>
+            <p>Ustal trasę przejazdu</p>
+        </div>
+        <div style="display: flex; gap: 5px;">
+            <button id="share-btn" class="icon-btn" title="Udostępnij trasę (Kopiuj link)">🔗</button>
+            <button id="reset-btn" class="icon-btn" title="Wyczyść trasę">🗑️</button>
+            <button id="help-btn" class="icon-btn" title="Instrukcja">?</button>
+        </div>
+    </header>
+
+    <div id="toast" class="toast">Link skopiowany do schowka! 📋</div>
 
             <form id="add-city-form" class="search-box">
                 <input type="text" id="city-input" placeholder="Wpisz miasto..." required>

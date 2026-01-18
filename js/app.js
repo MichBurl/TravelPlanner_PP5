@@ -19,27 +19,122 @@ const input = document.getElementById('city-input');
 const gasBtn = document.getElementById('show-gas-stations');
 const trafficBtn = document.getElementById('toggle-traffic');
 const helpBtn = document.getElementById('help-btn');
-const resetBtn = document.getElementById('reset-btn'); // Nowy przycisk
+const resetBtn = document.getElementById('reset-btn');
+const shareBtn = document.getElementById('share-btn'); // Nowy przycisk
 const helpModal = document.getElementById('help-modal');
 const closeModalBtn = document.getElementById('close-modal');
+const toastElement = document.getElementById('toast'); // Powiadomienie
 
 // --- INICJALIZACJA ---
 initChart();
 initFuelListeners(() => calculateAndDisplayStats(state.lastRouteData));
 
-// Próba wczytania danych po załadowaniu strony
-loadFromLocalStorage();
+// Logika startowa: URL > LocalStorage
+window.addEventListener('load', async () => {
+    const hasUrlRoute = await loadFromUrl();
+    if (!hasUrlRoute) {
+        loadFromLocalStorage();
+    }
+});
+
+
+// --- URL SHARE LOGIC (NOWOŚĆ) ---
+
+// Kopiowanie linku do schowka
+shareBtn.addEventListener('click', () => {
+    if (state.stops.length < 2) {
+        alert("Stwórz trasę (min. 2 punkty), aby ją udostępnić!");
+        return;
+    }
+
+    // Format: Nazwa,lng,lat;Nazwa,lng,lat
+    const routeString = state.stops.map(s => {
+        // encodeURIComponent zabezpiecza nazwy ze spacjami lub dziwnymi znakami
+        return `${encodeURIComponent(s.name)},${s.coords[0].toFixed(4)},${s.coords[1].toFixed(4)}`;
+    }).join(';');
+
+    const url = `${window.location.origin}${window.location.pathname}?route=${routeString}`;
+
+    // Kopiowanie do schowka (API przeglądarki)
+    navigator.clipboard.writeText(url).then(() => {
+        showToast("Link skopiowany do schowka! 📋");
+    }).catch(err => {
+        console.error('Błąd kopiowania:', err);
+        prompt("Skopiuj link ręcznie:", url);
+    });
+});
+
+// Wczytywanie z URL
+async function loadFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const routeParam = params.get('route');
+
+    if (!routeParam) return false;
+
+    try {
+        console.log("Wykryto trasę w linku...");
+        // Czyścimy obecny stan (jeśli coś było)
+        resetApp();
+
+        const stopsData = routeParam.split(';').map(segment => {
+            const [encodedName, lng, lat] = segment.split(',');
+            return {
+                name: decodeURIComponent(encodedName),
+                coords: [parseFloat(lng), parseFloat(lat)]
+            };
+        });
+
+        // Odtwarzamy trasę
+        for (const stopData of stopsData) {
+            const marker = addMapMarker(stopData.coords);
+            state.stops.push({
+                name: stopData.name,
+                coords: stopData.coords,
+                marker: marker,
+                weather: null,
+                arrivalTime: null
+            });
+        }
+
+        render();
+        
+        // Czekamy na mapę i obliczamy
+        setTimeout(async () => {
+            if (state.stops.length > 0) {
+                flyToLocation(state.stops[0].coords); // Leć do startu
+            }
+            await updateRoute();
+            saveToLocalStorage(); // Zapisujemy od razu, żeby po odświeżeniu zostało
+        }, 1000);
+
+        // Czyścimy URL (żeby nie wyglądał brzydko)
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showToast("Wczytano udostępnioną trasę! 🚀");
+        
+        return true; // Sukces
+
+    } catch (error) {
+        console.error("Błąd parsowania URL:", error);
+        return false;
+    }
+}
+
+function showToast(message) {
+    toastElement.innerText = message;
+    toastElement.classList.add('show');
+    setTimeout(() => {
+        toastElement.classList.remove('show');
+    }, 3000);
+}
+
 
 // --- LOCAL STORAGE LOGIC ---
 
 function saveToLocalStorage() {
-    // Nie możemy zapisać całego obiektu state.stops, bo zawiera "marker" (obiekt DOM),
-    // który powoduje błąd "Cyclic Object". Zapisujemy tylko dane tekstowe/liczbowe.
     const dataToSave = state.stops.map(stop => ({
         name: stop.name,
         coords: stop.coords
     }));
-    
     localStorage.setItem('travelApp_stops', JSON.stringify(dataToSave));
 }
 
@@ -51,26 +146,20 @@ async function loadFromLocalStorage() {
         const savedStops = JSON.parse(json);
         if (!Array.isArray(savedStops) || savedStops.length === 0) return;
 
-        console.log("Wczytuję historię:", savedStops);
-
-        // Odtwarzamy stan (dodajemy markery na mapę)
         for (const stopData of savedStops) {
             const marker = addMapMarker(stopData.coords);
             state.stops.push({
                 name: stopData.name,
                 coords: stopData.coords,
                 marker: marker,
-                weather: null, // Pogoda zostanie pobrana w updateRoute
+                weather: null, 
                 arrivalTime: null
             });
         }
 
-        // Renderujemy listę i przeliczamy trasę
         render();
-        // Czekamy chwilę aż mapa się w pełni załaduje, żeby flyTo działało poprawnie
         setTimeout(async () => {
             if (state.stops.length > 0) {
-                // Leć do ostatniego dodanego miasta
                 flyToLocation(state.stops[state.stops.length - 1].coords);
             }
             await updateRoute();
@@ -78,7 +167,7 @@ async function loadFromLocalStorage() {
 
     } catch (error) {
         console.error("Błąd wczytywania LocalStorage:", error);
-        localStorage.removeItem('travelApp_stops'); // Czyścimy błędne dane
+        localStorage.removeItem('travelApp_stops');
     }
 }
 
@@ -96,23 +185,18 @@ async function handleAddCity(cityData) {
         arrivalTime: new Date()
     });
 
-    saveToLocalStorage(); // <--- ZAPISZ
+    saveToLocalStorage();
     flyToLocation(cityData.coords);
     render();
     await updateRoute();
 }
 
-// Resetowanie aplikacji (Kosz)
+// Resetowanie aplikacji
 resetBtn.addEventListener('click', () => {
     if (confirm("Czy na pewno chcesz usunąć całą trasę?")) {
-        // Usuń markery
         state.stops.forEach(s => s.marker && s.marker.remove());
         state.stops = [];
-        
-        // Wyczyść localStorage
         localStorage.removeItem('travelApp_stops');
-        
-        // Reset reszty
         resetApp();
         render();
     }
@@ -120,7 +204,6 @@ resetBtn.addEventListener('click', () => {
 
 async function updateRoute() {
     if (state.stops.length < 2) {
-        // Jeśli po usunięciu zostało < 2 miast, wyczyść kreskę
         if (map.getSource('route')) {
              map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
         }
@@ -140,12 +223,10 @@ async function updateRoute() {
         let currentArrivalTime = new Date();
         state.lastArrivalTime = currentArrivalTime;
         
-        // Start
         state.stops[0].arrivalTime = currentArrivalTime;
         const startWeather = await getWeatherForecast(state.stops[0].coords[1], state.stops[0].coords[0]);
         if (startWeather) state.stops[0].weather = findForecastForTime(startWeather, currentArrivalTime);
 
-        // Kolejne punkty
         for (let i = 0; i < legs.length; i++) {
             currentArrivalTime = addSecondsToDate(currentArrivalTime, legs[i].duration);
             const nextIndex = i + 1;
@@ -181,13 +262,8 @@ function render() {
 function handleDeleteStop(index) {
     if (state.stops[index].marker) state.stops[index].marker.remove();
     state.stops.splice(index, 1);
-    
-    saveToLocalStorage(); // <--- ZAPISZ
-    
-    if (state.stops.length < 2) {
-        resetApp();
-    }
-    
+    saveToLocalStorage();
+    if (state.stops.length < 2) resetApp();
     render();
     updateRoute();
 }
@@ -195,9 +271,7 @@ function handleDeleteStop(index) {
 function handleReorderStops(fromIndex, toIndex) {
     const [movedItem] = state.stops.splice(fromIndex, 1);
     state.stops.splice(toIndex, 0, movedItem);
-    
-    saveToLocalStorage(); // <--- ZAPISZ
-    
+    saveToLocalStorage();
     render();
     updateRoute();
 }
@@ -207,17 +281,13 @@ function resetApp() {
         map.getSource('route').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
     }
     state.lastRouteData = null;
-    
-    // Reset stacji
     state.gasMarkers.forEach(m => m.remove());
     state.gasMarkers = [];
     gasBtn.classList.remove('active');
     gasBtn.innerText = "⛽ Pokaż stacje na trasie";
-    
     calculateAndDisplayStats(null);
     clearChart();
 }
-
 
 // --- LISTENERS ---
 
@@ -225,14 +295,11 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const cityName = input.value.trim();
     if (!cityName) return;
-
     try {
         const btn = form.querySelector('button');
         btn.disabled = true;
-
         const cityData = await getCityCoordinates(cityName);
         await handleAddCity(cityData);
-        
         input.value = '';
     } catch (error) {
         alert(error.message);
@@ -252,26 +319,18 @@ map.on('contextmenu', async (e) => {
     try {
         const cityData = await getCityNameFromCoords(lng, lat);
         loadingPopup.remove();
-        
         setTimeout(async () => {
             const userConfirmed = confirm(`Czy chcesz dodać przystanek: ${cityData.name}?`);
-            if (userConfirmed) {
-                await handleAddCity(cityData);
-            }
+            if (userConfirmed) await handleAddCity(cityData);
         }, 100);
-
     } catch (error) {
         loadingPopup.remove();
-        new mapboxgl.Popup()
-            .setLngLat([lng, lat])
-            .setHTML('<div style="color: red;">Tu nie ma miasta!</div>')
-            .addTo(map);
+        new mapboxgl.Popup().setLngLat([lng, lat]).setHTML('<div style="color: red;">Tu nie ma miasta!</div>').addTo(map);
     }
 });
 
 gasBtn.addEventListener('click', async () => {
     if (!state.lastRouteData) { alert("Najpierw wyznacz trasę!"); return; }
-    
     if (state.gasMarkers.length > 0) {
         state.gasMarkers.forEach(marker => marker.remove());
         state.gasMarkers = [];
@@ -279,11 +338,9 @@ gasBtn.addEventListener('click', async () => {
         gasBtn.innerText = "⛽ Pokaż stacje na trasie";
         return;
     }
-
     const originalText = gasBtn.innerText;
     gasBtn.innerText = "Szukam stacji...";
     gasBtn.disabled = true;
-
     try {
         const stations = await findGasStationsAlongRoute(state.lastRouteData.geometry);
         stations.forEach(station => {
@@ -292,7 +349,6 @@ gasBtn.addEventListener('click', async () => {
             el.style.fontSize = '20px';
             el.style.cursor = 'pointer';
             el.style.textShadow = '0 0 5px white'; 
-            
             const marker = new mapboxgl.Marker(el)
                 .setLngLat(station.coords)
                 .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<strong>${station.name}</strong><br>${station.address}`))
