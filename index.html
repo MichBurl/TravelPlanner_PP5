@@ -13,9 +13,12 @@
     <div class="app-layout">
         
         <aside class="sidebar">
-            <header>
-                <h2>🗺️ Planer</h2>
-                <p>Ustal trasę przejazdu</p>
+            <header class="sidebar-header">
+                <div>
+                    <h2>🗺️ Planer</h2>
+                    <p>Ustal trasę przejazdu</p>
+                </div>
+                <button id="help-btn" class="help-btn" title="Instrukcja">?</button>
             </header>
 
             <form id="add-city-form" class="search-box">
@@ -24,17 +27,14 @@
             </form>
 
             <div class="timeline-container">
-                <ul id="stops-list" class="timeline-list">
-                    </ul>
+                <ul id="stops-list" class="timeline-list"></ul>
             </div>
         </aside>
 
         <main class="main-content">
-            
             <div id="map" class="map-section"></div>
 
             <div class="stats-panel">
-                
                 <div class="controls-container">
                     <h3>⛽ Kalkulator Paliwa</h3>
                     <div class="input-group">
@@ -70,7 +70,28 @@
                 </div>
             </div>
         </main>
+    </div>
 
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>💡 Jak korzystać z aplikacji?</h3>
+                <button id="close-modal" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <ul>
+                    <li><strong>🖱️ Prawy Klik na Mapie:</strong> Dodaje nowy punkt trasy w miejscu kliknięcia.</li>
+                    <li><strong>📍 Wpisz Miasto:</strong> Użyj wyszukiwarki po lewej stronie.</li>
+                    <li><strong>✋ Przeciągnij i Upuść:</strong> Zmień kolejność miast na liście (Drag & Drop).</li>
+                    <li><strong>❌ Usuwanie:</strong> Kliknij "X" na liście, aby usunąć punkt.</li>
+                    <li><strong>⛽ Stacje Paliw:</strong> Kliknij przycisk na dole, aby znaleźć stacje wzdłuż trasy.</li>
+                    <li><strong>🌦️ Wykres:</strong> Pokazuje temperaturę (linia) i ryzyko deszczu (słupki).</li>
+                </ul>
+                <div class="modal-footer">
+                    <small>Wersja 1.1 - Traffic & Save (Coming soon)</small>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>

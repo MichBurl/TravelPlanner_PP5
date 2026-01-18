@@ -127,3 +127,30 @@ export async function findGasStationsAlongRoute(routeGeometry) {
 
     return stations;
 }
+
+/**
+ * REVERSE GEOCODING: Zamienia współrzędne [lng, lat] na nazwę miasta
+ */
+export async function getCityNameFromCoords(lng, lat) {
+    try {
+        // types=place -> chcemy tylko nazwy miejscowości, a nie konkretne ulice
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=place&limit=1&access_token=${config.mapboxToken}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.features.length === 0) {
+            throw new Error('Nie znaleziono miejscowości w tym punkcie.');
+        }
+
+        const location = data.features[0];
+        return {
+            name: location.text,
+            coords: location.center
+        };
+
+    } catch (error) {
+        console.error("Błąd Reverse Geocoding:", error);
+        throw error;
+    }
+}

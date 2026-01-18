@@ -1,7 +1,7 @@
 :root {
     --bg-app: #f0f2f5;
     --bg-panel: #ffffff;
-    --primary: #3b82f6; /* Niebieski */
+    --primary: #3b82f6;
     --text-dark: #1f2937;
     --text-light: #6b7280;
     --danger: #ef4444;
@@ -11,14 +11,13 @@
 
 body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: var(--text-dark); }
 
-/* GŁÓWNY LAYOUT: SIATKA */
 .app-layout {
     display: grid;
-    grid-template-columns: 320px 1fr; /* Lewo stałe, Prawo reszta */
+    grid-template-columns: 320px 1fr;
     height: 100%;
 }
 
-/* --- LEWY PANEL --- */
+/* --- SIDEBAR --- */
 .sidebar {
     background: var(--bg-panel);
     border-right: 1px solid #e5e7eb;
@@ -29,8 +28,37 @@ body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: 
     box-shadow: 2px 0 10px rgba(0,0,0,0.03);
 }
 
-.sidebar header h2 { font-size: 1.5rem; margin-bottom: 5px; }
-.sidebar header p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 20px; }
+/* Header z przyciskiem pomocy */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h2 { font-size: 1.5rem; margin-bottom: 5px; }
+.sidebar-header p { color: var(--text-light); font-size: 0.9rem; }
+
+/* Przycisk Pomocy (?) */
+.help-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--text-light);
+    background: transparent;
+    color: var(--text-light);
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.help-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: #eff6ff;
+}
 
 .search-box { display: flex; gap: 8px; margin-bottom: 20px; }
 .search-box input {
@@ -42,92 +70,85 @@ body { height: 100vh; overflow: hidden; background-color: var(--bg-app); color: 
 }
 
 .timeline-container { flex: 1; overflow-y: auto; padding-right: 5px; }
-
-/* Styl Listy Przystanków */
 .timeline-list { list-style: none; position: relative; padding-left: 15px; border-left: 2px solid #e5e7eb; margin-left: 10px; }
 .stop-item {
     background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 15px; position: relative; cursor: grab; transition: all 0.2s;
 }
 .stop-item:hover { box-shadow: 0 4px 6px rgba(0,0,0,0.05); transform: translateY(-1px); }
-.stop-item::before { /* Kropka na osi */
-    content: ''; position: absolute; left: -22px; top: 18px; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px var(--primary);
-}
+.stop-item::before { content: ''; position: absolute; left: -22px; top: 18px; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 1px var(--primary); }
 .delete-btn { float: right; color: var(--text-light); border: none; background: none; cursor: pointer; font-size: 1.1rem; }
 .delete-btn:hover { color: var(--danger); }
 
-/* --- PRAWY PANEL --- */
+/* --- MAIN --- */
 .main-content {
     display: grid;
-    grid-template-rows: 60% 40%; /* Proporcje: Mapa 60%, Statystyki 40% */
+    grid-template-rows: 60% 40%;
 }
-
-/* Mapa */
 .map-section { width: 100%; height: 100%; }
 
-/* Panel Dolny */
 .stats-panel {
     background: var(--bg-panel);
     border-top: 1px solid #e5e7eb;
     padding: 20px;
     display: grid;
-    grid-template-columns: 250px 1fr 1fr; /* 3 kolumny: Inputy | Liczby | Wykres */
+    grid-template-columns: 250px 1fr 1fr;
     gap: 30px;
     overflow-y: auto;
 }
 
-/* 1. Kontrolki Paliwa */
 .controls-container h3 { font-size: 1rem; margin-bottom: 15px; color: var(--text-dark); }
 .input-group { margin-bottom: 12px; }
 .input-group label { display: block; font-size: 0.8rem; color: var(--text-light); margin-bottom: 4px; }
-.input-group input {
-    width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary);
-}
+.input-group input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-weight: bold; color: var(--primary); }
 
-/* 2. Wyniki */
-.results-container {
-    display: flex; flex-direction: column; justify-content: center; gap: 15px;
-}
+.action-btn { width: 100%; margin-top: 10px; padding: 10px; background-color: var(--text-dark); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+.action-btn:hover { background-color: black; }
+.action-btn.active { background-color: var(--primary); }
+
+.results-container { display: flex; flex-direction: column; justify-content: center; gap: 15px; }
 .stat-box { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f3f4f6; padding-bottom: 8px; }
 .stat-box.cost-box { border: none; background: #eff6ff; padding: 15px; border-radius: 8px; color: var(--primary); }
 .stat-box .label { font-size: 0.9rem; color: var(--text-light); }
 .stat-box strong { font-size: 1.2rem; }
 
-/* 3. Wykres */
-.chart-wrapper {
-    position: relative;
-    height: 100%;
-    min-height: 150px;
+.chart-wrapper { position: relative; height: 100%; min-height: 150px; }
+.mapboxgl-popup-content { border-radius: 8px; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+/* --- MODAL STYLES --- */
+.modal-overlay {
+    display: none; /* Domyślnie ukryty */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Półprzezroczyste tło */
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
 }
 
-/* Przycisk akcji w panelu */
-.action-btn {
-    width: 100%;
-    margin-top: 10px;
-    padding: 10px;
-    background-color: var(--text-dark); /* Ciemny, elegancki */
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
+.modal-overlay.open { display: flex; }
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
 }
 
-.action-btn:hover {
-    background-color: black;
+@keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
-.action-btn.active {
-    background-color: var(--primary); /* Niebieski jak aktywne */
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;
 }
+.close-modal-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; }
+.close-modal-btn:hover { color: black; }
 
-/* Wygląd Popupa na mapie */
-.mapboxgl-popup-content {
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-.mapboxgl-popup-close-button {
-    font-size: 1.2rem;
-    color: #666;
-}
+.modal-body ul { list-style: none; padding: 0; }
+.modal-body li { margin-bottom: 12px; padding-left: 10px; border-left: 3px solid var(--primary); font-size: 0.95rem; line-height: 1.5; }
+.modal-footer { margin-top: 20px; text-align: center; color: #999; font-size: 0.8rem; border-top: 1px solid #eee; padding-top: 10px;}
