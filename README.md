@@ -10,6 +10,7 @@ Aplikacja oferuje zestaw narzędzi niezbędnych dla każdego kierowcy i podróż
 * **🖱️ Drag & Drop:** Łatwa zmiana kolejności przystanków na liście metodą "przeciągnij i upuść".
 * **🚦 Traffic Layer:** Podgląd natężenia ruchu na żywo (korki) nakładany na mapę jednym kliknięciem.
 * **⛽ Lokalizator Stacji:** Inteligentne wyszukiwanie stacji paliw wzdłuż wyznaczonej trasy (skanowanie korytarza trasy).
+* **🔴 Lokalizator Utrudnień na trasie:** Inteligentne wyszukiwanie utrudnień/korków wzdłuż wyznaczonej trasy (skanowanie korytarza trasy).
 * **🌥️ Smart Weather:** Prognoza pogody dopasowana do czasu przyjazdu do danego miasta (obliczana na podstawie czasu podróży).
 * **📊 Dashboard Statystyk:**
     * Automatyczne obliczanie dystansu i czasu przejazdu.
