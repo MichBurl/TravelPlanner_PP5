@@ -52,7 +52,7 @@ Aby uruchomić projekt lokalnie, wykonaj poniższe kroki:
         ```
 
 3.  **Uruchom serwer lokalny:**
-    Ponieważ projekt używa modułów ES6 (`import/export`), nie zadziała po dwukrotnym kliknięciu w `index.html`. Musisz użyć serwera lokalnego. (Polecam używać na incognito aby wtyczki nie blokowały funkcjonalności)
+    Ponieważ projekt używa modułów ES6 (`import/export`), nie zadziała po dwukrotnym kliknięciu w `index.html`. Musisz użyć serwera lokalnego. **(Polecam używać na incognito aby wtyczki nie blokowały funkcjonalności)**
     
     * **VS Code (Polecane):** Zainstaluj rozszerzenie *Live Server*, kliknij prawym na `index.html` i wybierz *"Open with Live Server"*.
     * **Python:** `python -m http.server`
