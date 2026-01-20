@@ -39,7 +39,7 @@ Aby uruchomić projekt lokalnie, wykonaj poniższe kroki:
 1.  **Sklonuj repozytorium:**
     ```bash
     git clone https://github.com/MichBurl/TravelPlanner_PP5.git
-    cd travel-planner-pro
+    cd TravelPlanner_PP5
     ```
 
 2.  **Skonfiguruj klucze API:**
