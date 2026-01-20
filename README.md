@@ -76,4 +76,5 @@ travel-planner-pro/
     ├── chartManager.js     # Konfiguracja wykresu Chart.js
     ├── autocomplete.js     # Logika podpowiedzi w wyszukiwarce
     ├── utils.js            # Funkcje pomocnicze (czas, daty)
+    ├── ui.js 
     └── config.js           # Plik z kluczami API (ignorowany przez git)
