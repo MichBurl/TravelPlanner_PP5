@@ -14,6 +14,7 @@ const gasBtn = document.getElementById('show-gas-stations');
 const trafficBtn = document.getElementById('toggle-traffic');
 const shareBtn = document.getElementById('share-btn');
 const resetBtn = document.getElementById('reset-btn');
+const googleMapsBtn = document.getElementById('google-maps-btn');
 const toast = document.getElementById('toast');
 const toastMsg = document.getElementById('toast-msg');
 
@@ -194,7 +195,37 @@ trafficBtn.addEventListener('click', () => {
     }
 });
 
-// 5. Udostępnianie (Share)
+// 5. NAWIGACJA GOOGLE MAPS
+googleMapsBtn.addEventListener('click', () => {
+    if (state.stops.length < 2) return showToast("Wyznacz trasę, aby nawigować!");
+
+    // Mapbox: [lng, lat] -> Google: lat,lng
+    const origin = state.stops[0];
+    const destination = state.stops[state.stops.length - 1];
+    
+    // Pobieramy punkty pośrednie (wszystko co nie jest startem ani metą)
+    const waypoints = state.stops.slice(1, -1);
+
+    const originStr = `${origin.coords[1]},${origin.coords[0]}`;
+    const destStr = `${destination.coords[1]},${destination.coords[0]}`;
+
+    // Budujemy URL
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destStr}`;
+
+    if (waypoints.length > 0) {
+        // Punkty pośrednie oddzielamy pionową kreską |
+        const waypointsStr = waypoints.map(s => `${s.coords[1]},${s.coords[0]}`).join('|');
+        url += `&waypoints=${waypointsStr}`;
+    }
+
+    // Dodajemy tryb podróży (samochód)
+    url += `&travelmode=driving`;
+
+    // Otwieramy w nowej karcie
+    window.open(url, '_blank');
+});
+
+// 6. Udostępnianie (Share)
 shareBtn.addEventListener('click', () => {
     const link = generateShareLink();
     if (!link) return showToast("Za mało punktów do udostępnienia!");
@@ -206,7 +237,7 @@ shareBtn.addEventListener('click', () => {
         });
 });
 
-// 6. Resetowanie Trasy
+// 7. Resetowanie Trasy
 resetBtn.addEventListener('click', () => {
     if (state.stops.length === 0) return showToast("Trasa jest pusta.");
     resetModalInstance.show();

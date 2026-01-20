@@ -77,14 +77,15 @@ export async function getWeatherForecast(lat, lng) {
 }
 
 /**
- * Pobiera trasę przejazdu
+ * Pobiera trasę przejazdu (Zaktualizowane o traffic)
  */
 export async function getRoute(coordsArray) {
     const coordsString = coordsArray
         .map(coord => coord.join(','))
         .join(';');
 
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsString}?geometries=geojson&overview=full&access_token=${config.mapboxToken}`;
+    // ZMIANA: Profil 'driving-traffic' + 'annotations=congestion' dla wykrywania korków
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coordsString}?geometries=geojson&overview=full&annotations=congestion&access_token=${config.mapboxToken}`;
 
     try {
         const response = await fetch(url);
@@ -158,7 +159,6 @@ export async function findGasStationsAlongRoute(routeGeometry) {
 
 /**
  * AUTOCOMPLETE: Pobiera podpowiedzi (Miasta + Ulice)
- * ZMIANA: Dodano 'address' do parametru types
  */
 export async function getCitySuggestions(query) {
     if (query.length < 3) return [];

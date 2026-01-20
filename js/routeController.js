@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { getRoute, getWeatherForecast } from './api.js';
-import { addMapMarker, flyToLocation, drawRoute } from './map.js';
+// ZMIANA: Dodano import addCongestionMarkers
+import { addMapMarker, flyToLocation, drawRoute, addCongestionMarkers } from './map.js';
 import { renderStopsList } from './ui.js';
 import { addSecondsToDate, findForecastForTime } from './utils.js';
 import { updateChartData, clearChart } from './chartManager.js';
@@ -10,7 +11,6 @@ import { saveToLocalStorage } from './storage.js';
 // --- GŁÓWNA FUNKCJA AKTUALIZACJI ---
 export async function updateRoute() {
     if (state.stops.length < 2) {
-        // Jeśli za mało punktów - czyścimy widok
         clearRouteView();
         return;
     }
@@ -18,13 +18,21 @@ export async function updateRoute() {
     const coordsArray = state.stops.map(stop => stop.coords);
 
     try {
+        // ZABEZPIECZENIE 1: Sprawdzamy czy tablica istnieje przed pętlą
+        if (state.trafficMarkers && Array.isArray(state.trafficMarkers)) {
+            state.trafficMarkers.forEach(m => m.remove());
+        }
+        state.trafficMarkers = []; // Resetujemy tablicę
+
         const routeData = await getRoute(coordsArray);
         state.lastRouteData = routeData;
         drawRoute(routeData.geometry);
 
+        const newMarkers = addCongestionMarkers(routeData);
+        state.trafficMarkers = newMarkers; 
+
         await calculateWeatherAndTimes(routeData);
 
-        // Odśwież widoki
         render();
         updateDashboardView();
 
@@ -94,7 +102,7 @@ export function handleReorderStops(fromIndex, toIndex) {
 }
 
 export function resetApp() {
-    // Usuń markery
+    // Usuń markery miast
     state.stops.forEach(s => s.marker && s.marker.remove());
     state.stops = [];
     
@@ -122,19 +130,26 @@ function updateDashboardView() {
 }
 
 function clearRouteView() {
-    // Importujemy map dynamicznie lub zakładamy że drawRoute obsłuży puste dane
-    // Tutaj użyjemy drawRoute z pustą geometrią
     drawRoute({ type: 'LineString', coordinates: [] });
     
     state.lastRouteData = null;
-    state.gasMarkers.forEach(m => m.remove());
-    state.gasMarkers = [];
+
+    if (state.gasMarkers) {
+        state.gasMarkers.forEach(m => m.remove());
+        state.gasMarkers = [];
+    }
+
+    // ZABEZPIECZENIE 2: Bezpieczne czyszczenie korków
+    if (state.trafficMarkers && Array.isArray(state.trafficMarkers)) {
+        state.trafficMarkers.forEach(m => m.remove());
+    }
+    state.trafficMarkers = [];
     
-    // Reset przycisku gazu (brzydkie, ale skuteczne - lepiej byłoby mieć UI managera)
+    // ... reszta funkcji (reset przycisku gazu, chart) ...
     const gasBtn = document.getElementById('show-gas-stations');
     if(gasBtn) {
         gasBtn.classList.remove('active');
-        gasBtn.innerText = "⛽ Pokaż stacje na trasie";
+        gasBtn.innerHTML = '<i class="bi bi-fuel-pump me-2"></i> Stacje paliw';
     }
 
     calculateAndDisplayStats(null);
